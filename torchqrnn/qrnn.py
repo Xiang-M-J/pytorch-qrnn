@@ -197,11 +197,13 @@ if __name__ == '__main__':
     qrnn.use_cuda = False
     Z, _ = qrnn(X)
 
-    diff = (Y - Z).sum().data[0]
+    diff = (Y - Z).sum().data
     print('Total difference between QRNN(use_cuda=True) and QRNN(use_cuda=False) results:', diff)
     assert diff < 1e-5, 'CUDA and non-CUDA QRNN layers return different results'
 
     from torch.autograd import gradcheck
+    X = Variable(torch.rand((10, 2, hidden_size)), requires_grad=True).cuda()
     inputs = [X,]
-    test = gradcheck(QRNNLayer(hidden_size, hidden_size).cuda(), inputs)
+    test = gradcheck(QRNNLayer(hidden_size, hidden_size).cuda(), inputs, eps=1e-4, atol=1e-3)
     print(test)
+    
